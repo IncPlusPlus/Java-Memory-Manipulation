@@ -35,32 +35,32 @@ public final class MemoryBuffer extends Pointer {
 		setByte(0, (byte) (value ? 1 : 0));
 		return this;
 	}
-	
+
 	public MemoryBuffer putByte(int value) {
 		setByte(0, (byte) value);
 		return this;
 	}
-	
+
 	public MemoryBuffer putShort(int value) {
 		setShort(0, (short) value);
 		return this;
 	}
-	
+
 	public MemoryBuffer putInt(int value) {
 		setInt(0, value);
 		return this;
 	}
-	
+
 	public MemoryBuffer putLong(long value) {
 		setLong(0, value);
 		return this;
 	}
-	
+
 	public MemoryBuffer putFloat(float value) {
 		setFloat(0, value);
 		return this;
 	}
-	
+
 	public MemoryBuffer putDouble(double value) {
 		setDouble(0, value);
 		return this;
@@ -74,8 +74,16 @@ public final class MemoryBuffer extends Pointer {
 		return getByte() == 1;
 	}
 
+	public boolean getBoolean(long offset) {
+		return getByte(offset) == 1;
+	}
+
 	public int getByte() {
 		return getByte(0);
+	}
+
+	public byte[] getByteArray() {
+		return getByteArray(0, this.size);
 	}
 
 	public int getShort() {

@@ -24,12 +24,12 @@ import com.sun.jna.NativeLibrary;
  */
 public final class libc {
 
-    static {
-        Native.register(NativeLibrary.getInstance("c"));
-    }
+	static {
+		Native.register(NativeLibrary.getInstance("c"));
+	}
 
-    public static native int getuid();
+	public static native int getuid();
 
-    public static native int getpid();
+	public static native int getpid();
 
 }

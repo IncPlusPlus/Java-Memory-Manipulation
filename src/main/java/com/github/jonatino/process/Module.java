@@ -16,120 +16,136 @@
 
 package com.github.jonatino.process;
 
-
 import com.github.jonatino.misc.Cacheable;
 import com.github.jonatino.misc.MemoryBuffer;
 import com.sun.jna.Pointer;
 
 public final class Module implements DataSource {
 
-    private final Process process;
-    private final String name;
-    private final long address;
-    private final int size;
-    private final Pointer pointer;
-    private final String permissions;
-    private MemoryBuffer data;
+	private final Process process;
+	private final String name;
+	private final long address;
+	private final int size;
+	private final Pointer pointer;
+	private final String permissions;
+	private MemoryBuffer data;
 
-    public Module(Process process, String name, Pointer pointer, long size) {
-        this.process = process;
-        this.name = name;
-        this.address = Pointer.nativeValue(pointer);
-        this.size = (int) size;
-        this.pointer = pointer;
-        this.permissions = "rwxp";
-    }
-    
-    public Module(Process process, String name, Pointer pointer, long size, String permissions) {
-        this.process = process;
-        this.name = name;
-        this.address = Pointer.nativeValue(pointer);
-        this.size = (int) size;
-        this.pointer = pointer;
-        this.permissions = permissions;
-    }
+	public Module(Process process, String name, Pointer pointer, long size) {
+		this.process = process;
+		this.name = name;
+		this.address = Pointer.nativeValue(pointer);
+		this.size = (int) size;
+		this.pointer = pointer;
+		this.permissions = "rwxp";
+	}
 
-    public Process process() {
-        return process;
-    }
+	public Module(Process process, String name, Pointer pointer, long size, String permissions) {
+		this.process = process;
+		this.name = name;
+		this.address = Pointer.nativeValue(pointer);
+		this.size = (int) size;
+		this.pointer = pointer;
+		this.permissions = permissions;
+	}
 
-    public Pointer pointer() {
-        return pointer;
-    }
+	public Process process() {
+		return process;
+	}
 
-    public String name() {
-        return name;
-    }
+	public Pointer pointer() {
+		return pointer;
+	}
 
-    public int size() {
-        return size;
-    }
+	public String name() {
+		return name;
+	}
 
-    public long start() {
-        return address;
-    }
-    
-    public long end() {
-        return address+size;
-    }
-    
-    public boolean isReadable() {
-        return permissions.charAt(0) == 'r';
-    }
-    
-    public boolean isWritable() {
-        return permissions.charAt(1) == 'w';
-    }
-    
-    public boolean isExecutable() {
-        return permissions.charAt(2) == 'x';
-    }
-    
-    public boolean isShared() {
-        return permissions.charAt(3) != '-';
-    }
+	public int size() {
+		return size;
+	}
 
-    public MemoryBuffer data() {
-        return data(false);
-    }
+	public long start() {
+		return address;
+	}
 
-    public MemoryBuffer data(boolean forceNew) {
-        return data == null || forceNew ? data = process().read(pointer(), size()) : data;
-    }
+	public long end() {
+		return address + size;
+	}
 
-    @Override
-    public MemoryBuffer read(Pointer address, int size) {
-        return process().read(address, size);
-    }
+	public boolean isReadable() {
+		return permissions.charAt(0) == 'r';
+	}
 
-    @Override
-    public MemoryBuffer read(Pointer address, int size, MemoryBuffer buffer) {
-        return process().read(address, size, buffer);
-    }
-    
-    @Override
-    public Process write(Pointer address, MemoryBuffer buffer) {
-        return process().write(address, buffer);
-    }
+	public boolean isWritable() {
+		return permissions.charAt(1) == 'w';
+	}
 
-    @Override
-    public boolean canRead(Pointer offset, int size) {
-        return process().canRead(Cacheable.pointer(Pointer.nativeValue(offset)), size);
-    }
+	public boolean isExecutable() {
+		return permissions.charAt(2) == 'x';
+	}
 
-    public long GetAbsoluteAddress(long address, int offset, int size) {
-        long code = (int) readPointer(address + offset);
-        if(code > 0) return code + address + size;
-        return 0;
-    }
-    
-    public long GetCallAddress(long address) {
-        return GetAbsoluteAddress(address, 1, 5);
-    }
-    
-    @Override
-    public String toString() {
-        return "Module{" + "name='" + name + '\'' + ", address=" + address + ", size=" + size + '}';
-    }
+	public boolean isShared() {
+		return permissions.charAt(3) != '-';
+	}
+
+	public MemoryBuffer data() {
+		return data(false);
+	}
+
+	public MemoryBuffer data(boolean forceNew) {
+		return data == null || forceNew ? data = process().read(pointer(), size()) : data;
+	}
+
+	@Override
+	public MemoryBuffer read(Pointer address, int size) {
+		return process().read(address, size);
+	}
+
+	@Override
+	public MemoryBuffer read(Pointer address, int size, MemoryBuffer buffer) {
+		return process().read(address, size, buffer);
+	}
+
+	@Override
+	public MemoryBuffer read(long address, int size) {
+		return process().read(address, size);
+	}
+
+	@Override
+	public void read(long address, int size, long target) {
+		process().read(address, size, target);
+	}
+
+	@Override
+	public Process write(Pointer address, MemoryBuffer buffer) {
+		return process().write(address, buffer);
+	}
+
+	@Override
+	public boolean canRead(Pointer offset, int size) {
+		return process().canRead(Cacheable.pointer(Pointer.nativeValue(offset)), size);
+	}
+
+	public long GetAbsoluteAddress(long address, int offset, int size) {
+		long code = (int) readPointer(address + offset);
+		System.out.println("reading " + hex(address + offset));
+		System.out.println("read: " + hex(code));
+		if (code > 0)
+			return code + address + size;
+		return 0;
+	}
+
+	public long GetCallAddress(long address) {
+		return GetAbsoluteAddress(address, 1, 5);
+	}
+
+	@Override
+	public String toString() {
+		return "Module{" + "name='" + name + '\'' + ", address=" + address + ", size=" + size + '}';
+	}
+
+	public static String hex(long n) {
+		return String.format("0x%8s", Long.toHexString(n)).replace(' ', '0');
+	}
 
 }

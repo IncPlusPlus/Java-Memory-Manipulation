@@ -21,7 +21,6 @@ import com.github.jonatino.natives.mac.mac;
 import com.github.jonatino.natives.unix.libc;
 import com.github.jonatino.natives.win32.Kernel32;
 import com.github.jonatino.process.impl.mac.MacProcess;
-import com.github.jonatino.process.impl.unix.UnixProcess;
 import com.github.jonatino.process.impl.unix.UnixProcessC;
 import com.github.jonatino.process.impl.win32.Win32Process;
 import com.sun.jna.Native;
@@ -50,13 +49,11 @@ public final class Processes {
 				Kernel32.CloseHandle(snapshot);
 			}
 		} else if (Platform.isMac() || Platform.isLinux()) {
-			int pid = Utils.exec("bash", "-c", "ps -A | grep -m1 \"" + name + "\" | awk '{print $1}'");
-			if(pid == 0) return null;
-			return byId(pid);
+			return byId(Utils.exec("bash", "-c", "ps -A | grep -m1 \"" + name + "\" | awk '{print $1}'"));
 		} else {
 			throw new UnsupportedOperationException("Unknown operating system! (" + System.getProperty("os.name") + ")");
 		}
-		return null;
+		throw new IllegalStateException("Process '" + name + "' was not found. Are you sure its running?");
 	}
 
 	public static Process byId(int id) {

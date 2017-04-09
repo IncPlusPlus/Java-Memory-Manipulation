@@ -37,23 +37,24 @@ public final class UnixProcessC extends AbstractProcess {
 	@Override
 	public void initModules() {
 		try {
+			String prevmodulename = "";
 			for (String line : Files.readAllLines(Paths.get("/proc/" + id() + "/maps"))) {
 				String[] split = line.split(" ");
 				String[] regionSplit = split[0].split("-");
-				
+
 				long start = -1, end = -1, offset = -1;
 				try {
 					start = Long.parseLong(regionSplit[0], 16);
 					end = Long.parseLong(regionSplit[1], 16);
 					offset = Long.parseLong(split[2], 16);
-				} catch(NumberFormatException ex) {
+				} catch (NumberFormatException ex) {
 					continue;
 				}
-				
+
 				if (offset < 0 || start <= 0 || end <= 0) {
 					continue;
 				}
-				
+
 				String path = "";
 				for (int i = 5; i < split.length; i++) {
 					String s = split[i].trim();
@@ -66,11 +67,29 @@ public final class UnixProcessC extends AbstractProcess {
 						path += split[i];
 					}
 				}
-				
+
 				String modulename = path.substring(path.lastIndexOf("/") + 1, path.length());
 				// TODO: Fix for linux
-				if(split[1].charAt(2) == 'x')
-				modules.put(modulename, new Module(this, modulename, Pointer.createConstant(start), end - start, split[1]));
+				if (split[1].charAt(2) != 'x')
+					continue;
+				if (split[1].charAt(0) != 'r')
+					continue;
+				if (modulename == "" && prevmodulename != "") {
+					long mstart = modules.get(prevmodulename).start();
+					modules.put(prevmodulename, new Module(this, prevmodulename, Pointer.createConstant(mstart), end - mstart, split[1]));
+					System.out.println("> Extended " + prevmodulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
+				} else {
+					if (modules.containsKey(modulename)) {
+						long mstart = modules.get(modulename).start();
+						modules.put(modulename, new Module(this, modulename, Pointer.createConstant(mstart), end - mstart, split[1]));
+						System.out.println("> Updated " + modulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
+					} else {
+						modules.put(modulename, new Module(this, modulename, Pointer.createConstant(start), end - start, split[1]));
+						System.out.println("Found " + modulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
+					}
+				}
+				if (modulename != "")
+					prevmodulename = modulename;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -78,24 +97,23 @@ public final class UnixProcessC extends AbstractProcess {
 	}
 
 	@Override
-	public MemoryBuffer read(Pointer address, int size) {
+	public MemoryBuffer read(long address, int size) {
 		MemoryBuffer buffer = Cacheable.buffer(size);
-		if (unixc.mem_read(id(), Pointer.nativeValue(buffer), Pointer.nativeValue(address), size) != size) {
-			throw new RuntimeException("Read memory failed at address " + Pointer.nativeValue(address) + " size " + size);
-		}
-		return buffer;
-	}
-	
-	@Override
-	public MemoryBuffer read(Pointer address, int size, MemoryBuffer buffer) {
-		if (unixc.mem_read(id(), Pointer.nativeValue(buffer), Pointer.nativeValue(address), size) != size) {
-			throw new RuntimeException("Read memory failed at address " + Pointer.nativeValue(address) + " size " + size);
+		if (unixc.mem_read(id(), Pointer.nativeValue(buffer), address, size) != size) {
+			throw new RuntimeException("Read memory failed at address " + Module.hex(address) + " size " + size);
 		}
 		return buffer;
 	}
 
 	@Override
-	public Process write(Pointer address, MemoryBuffer buffer) throws com.sun.jna.LastErrorException {		
+	public void read(long address, int size, long target) {
+		if (unixc.mem_read(id(), target, address, size) != size) {
+			throw new RuntimeException("Read memory failed at address " + Module.hex(address) + " size " + size);
+		}
+	}
+
+	@Override
+	public Process write(Pointer address, MemoryBuffer buffer) throws com.sun.jna.LastErrorException {
 		if (unixc.mem_write(id(), Pointer.nativeValue(buffer), Pointer.nativeValue(address), buffer.size()) != buffer.size()) {
 			throw new RuntimeException("Write memory failed at address " + Pointer.nativeValue(address) + " size " + buffer.size());
 		}

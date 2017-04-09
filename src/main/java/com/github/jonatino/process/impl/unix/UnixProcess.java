@@ -33,8 +33,8 @@ import java.nio.file.Paths;
  */
 public final class UnixProcess extends AbstractProcess {
 
-	private ThreadLocal<unix.iovec> local = ThreadLocal.withInitial( ()-> new unix.iovec());
-	private ThreadLocal<unix.iovec> remote = ThreadLocal.withInitial( ()-> new unix.iovec());
+	private ThreadLocal<unix.iovec> local = ThreadLocal.withInitial(() -> new unix.iovec());
+	private ThreadLocal<unix.iovec> remote = ThreadLocal.withInitial(() -> new unix.iovec());
 
 	public UnixProcess(int id) {
 		super(id);
@@ -45,21 +45,21 @@ public final class UnixProcess extends AbstractProcess {
 		try {
 			for (String line : Files.readAllLines(Paths.get("/proc/" + id() + "/maps"))) {
 				String[] split = line.split(" ");
-				String[] regionSplit = split[0].split("-");				
-				
+				String[] regionSplit = split[0].split("-");
+
 				long start = -1, end = -1, offset = -1;
 				try {
 					start = Long.parseLong(regionSplit[0], 16);
 					end = Long.parseLong(regionSplit[1], 16);
 					offset = Long.parseLong(split[2], 16);
-				} catch(NumberFormatException ex) {
+				} catch (NumberFormatException ex) {
 					continue;
 				}
-				
+
 				if (offset < 0 || start <= 0 || end <= 0) {
 					continue;
 				}
-				
+
 				String path = "";
 				for (int i = 5; i < split.length; i++) {
 					String s = split[i].trim();
@@ -72,11 +72,11 @@ public final class UnixProcess extends AbstractProcess {
 						path += split[i];
 					}
 				}
-				
+
 				String modulename = path.substring(path.lastIndexOf("/") + 1, path.length());
 				// TODO: Fix for linux
-				if(split[1].charAt(2) == 'x')
-				modules.put(modulename, new Module(this, modulename, Pointer.createConstant(start), end - start, split[1]));
+				if (split[1].charAt(2) == 'x')
+					modules.put(modulename, new Module(this, modulename, Pointer.createConstant(start), end - start, split[1]));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -84,31 +84,30 @@ public final class UnixProcess extends AbstractProcess {
 	}
 
 	@Override
-	public MemoryBuffer read(Pointer address, int size) {
+	public MemoryBuffer read(long address, int size) {
 		MemoryBuffer buffer = Cacheable.buffer(size);
 		local.get().iov_base = buffer;
-		remote.get().iov_base = address;
+		remote.get().iov_base = Cacheable.pointer(address);
 		remote.get().iov_len = local.get().iov_len = size;
 		if (unix.process_vm_readv(id(), local.get(), 1, remote.get(), 1, 0) != size) {
-			throw new RuntimeException("Read memory failed at address " + Pointer.nativeValue(address) + " size " + size);
+			throw new RuntimeException("Read memory failed at address " + address + " size " + size);
 		}
-		
-		return buffer;
-	}
-	
-	@Override
-	public MemoryBuffer read(Pointer address, int size, MemoryBuffer buffer) {
-		local.get().iov_base = buffer;
-		remote.get().iov_base = address;
-		remote.get().iov_len = local.get().iov_len = size;
-		if (unix.process_vm_readv(id(), local.get(), 1, remote.get(), 1, 0) != size) {
-			throw new RuntimeException("Read memory failed at address " + Pointer.nativeValue(address) + " size " + size);
-		}
+
 		return buffer;
 	}
 
 	@Override
-	public Process write(Pointer address, MemoryBuffer buffer) throws com.sun.jna.LastErrorException {		
+	public void read(long address, int size, long target) {
+		local.get().iov_base = Cacheable.pointer(target);
+		remote.get().iov_base = Cacheable.pointer(address);
+		remote.get().iov_len = local.get().iov_len = size;
+		if (unix.process_vm_readv(id(), local.get(), 1, remote.get(), 1, 0) != size) {
+			throw new RuntimeException("Read memory failed at address " + address + " size " + size);
+		}
+	}
+
+	@Override
+	public Process write(Pointer address, MemoryBuffer buffer) throws com.sun.jna.LastErrorException {
 		local.get().iov_base = buffer;
 		remote.get().iov_base = address;
 		remote.get().iov_len = local.get().iov_len = buffer.size();

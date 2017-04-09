@@ -7,7 +7,7 @@ import com.sun.jna.*;
 
 public final class unixc {
 
-	static {		   
+	static {
 		try {
 			String className = unixc.class.getName().replace('.', '/');
 			String classJar = unixc.class.getResource("/" + className + ".class").toString();
@@ -18,11 +18,11 @@ public final class unixc {
 				// Loading directly from java.library.path
 				System.loadLibrary("native_mem");
 			}
-	    } catch (UnsatisfiedLinkError | IOException e) {
-	      System.err.println("Native library (native_mem - libnative_mem.so) failed to load!\n");
-	      e.printStackTrace();
-	      System.exit(1);
-	    }
+		} catch (UnsatisfiedLinkError | IOException e) {
+			System.err.println("Native library (native_mem - libnative_mem.so) failed to load!\n");
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	public static native long mem_read(int pid, long localaddr, long remoteaddr, int size) throws LastErrorException;

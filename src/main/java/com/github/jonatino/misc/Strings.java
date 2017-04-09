@@ -24,25 +24,25 @@ import net.openhft.hashing.LongHashFunction;
  */
 public final class Strings {
 
-    private static Long2ObjectArrayMap<String> stringCache = new Long2ObjectArrayMap<>(16_982);
+	private static Long2ObjectArrayMap<String> stringCache = new Long2ObjectArrayMap<>(16_982);
 
-    public static String transform(byte[] bytes) {
-        long hash = LongHashFunction.xx_r39().hashBytes(bytes);
-        if (stringCache.containsKey(hash)) {
-            return stringCache.get(hash);
-        }
-        for (int i = 0; i < bytes.length; i++) {
-            if (bytes[i] == 0) {
-                bytes[i] = 32;
-            }
-        }
-        String string = new String(bytes).split(" ")[0].trim().intern();
-        stringCache.put(hash, string);
-        return string;
-    }
+	public static String transform(byte[] bytes) {
+		long hash = LongHashFunction.xx().hashBytes(bytes);
+		if (stringCache.containsKey(hash)) {
+			return stringCache.get(hash);
+		}
+		for (int i = 0; i < bytes.length; i++) {
+			if (bytes[i] == 0) {
+				bytes[i] = 32;
+			}
+		}
+		String string = new String(bytes);
+		stringCache.put(hash, string);
+		return string;
+	}
 
-    public static String hex(int value) {
-        return "0x" + Integer.toHexString(value).toUpperCase();
-    }
+	public static String hex(int value) {
+		return "0x" + Integer.toHexString(value).toUpperCase();
+	}
 
 }

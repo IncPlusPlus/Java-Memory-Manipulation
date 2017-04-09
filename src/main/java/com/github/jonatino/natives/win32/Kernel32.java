@@ -16,7 +16,6 @@
 
 package com.github.jonatino.natives.win32;
 
-import com.github.jonatino.misc.MemoryBuffer;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
@@ -39,8 +38,8 @@ public final class Kernel32 {
 
 	public static native boolean Module32NextW(Pointer pointer, Tlhelp32.MODULEENTRY32W entry);
 
-	public static native long ReadProcessMemory(Pointer process, Pointer address, MemoryBuffer memory, int size, int written);
+	public static native long ReadProcessMemory(Pointer process, Pointer address, Pointer memory, int size, int written);
 
-	public static native long WriteProcessMemory(Pointer process, Pointer address, MemoryBuffer memory, int size, int written);
+	public static native long WriteProcessMemory(Pointer process, Pointer address, Pointer memory, int size, int written);
 
 }

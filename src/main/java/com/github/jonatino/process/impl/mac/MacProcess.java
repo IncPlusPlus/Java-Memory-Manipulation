@@ -43,28 +43,26 @@ public final class MacProcess extends AbstractProcess {
 
 	@Override
 	public void initModules() {
-		//TODO
+		// TODO
 	}
 
 	@Override
-	public MemoryBuffer read(Pointer address, int size) {
+	public MemoryBuffer read(long address, int size) {
 		MemoryBuffer buffer = Cacheable.buffer(size);
-		if (mac.vm_read(task(), address, size, buffer, INT_BY_REF) != 0 || INT_BY_REF.getValue() != size) {
-			throw new RuntimeException("Read memory failed at address " + Pointer.nativeValue(address) + " size " + size);
+		if (mac.vm_read(task(), Cacheable.pointer(address), size, buffer, INT_BY_REF) != 0 || INT_BY_REF.getValue() != size) {
+			throw new RuntimeException("Read memory failed at address " + address + " size " + size);
 		}
 		Pointer.nativeValue(buffer, Pointer.nativeValue(buffer.getPointer(0)));
 		return buffer;
 	}
 
 	@Override
-	public MemoryBuffer read(Pointer address, int size, MemoryBuffer buffer) {
-		if (mac.vm_read(task(), address, size, buffer, INT_BY_REF) != 0 || INT_BY_REF.getValue() != size) {
-			throw new RuntimeException("Read memory failed at address " + Pointer.nativeValue(address) + " size " + size);
+	public void read(long address, int size, long buffer) {
+		if (mac.vm_read(task(), Cacheable.pointer(address), size, Cacheable.pointer(buffer), INT_BY_REF) != 0 || INT_BY_REF.getValue() != size) {
+			throw new RuntimeException("Read memory failed at address " + address + " size " + size);
 		}
-		Pointer.nativeValue(buffer, Pointer.nativeValue(buffer.getPointer(0)));
-		return buffer;
 	}
-	
+
 	@Override
 	public Process write(Pointer address, MemoryBuffer buffer) {
 		if (mac.vm_write(task(), address, buffer, buffer.size()) != 0) {

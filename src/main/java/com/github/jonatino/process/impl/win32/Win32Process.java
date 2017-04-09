@@ -32,59 +32,58 @@ import com.sun.jna.platform.win32.Win32Exception;
  */
 public final class Win32Process extends AbstractProcess {
 
-    private final Pointer handle;
+	private final Pointer handle;
 
-    public Win32Process(int id, Pointer handle) {
-        super(id);
-        this.handle = handle;
-    }
+	public Win32Process(int id, Pointer handle) {
+		super(id);
+		this.handle = handle;
+	}
 
-    public Pointer pointer() {
-        return handle;
-    }
+	public Pointer pointer() {
+		return handle;
+	}
 
-    @Override
-    public void initModules() {
-        Pointer snapshot = Kernel32.CreateToolhelp32Snapshot(Tlhelp32.TH32CS_SNAPMODULE32.intValue() | Tlhelp32.TH32CS_SNAPMODULE.intValue(), id());
-        Tlhelp32.MODULEENTRY32W entry = new Tlhelp32.MODULEENTRY32W.ByReference();
-        try {
-            while (Kernel32.Module32NextW(snapshot, entry)) {
-                String name = entry.szModule();
-                modules.putIfAbsent(name, new Module(this, name, entry.hModule.getPointer(), entry.modBaseSize.intValue()));
-            }
-        } finally {
-            Kernel32.CloseHandle(snapshot);
-        }
-    }
+	@Override
+	public void initModules() {
+		Pointer snapshot = Kernel32.CreateToolhelp32Snapshot(Tlhelp32.TH32CS_SNAPMODULE32.intValue() | Tlhelp32.TH32CS_SNAPMODULE.intValue(), id());
+		Tlhelp32.MODULEENTRY32W entry = new Tlhelp32.MODULEENTRY32W.ByReference();
+		try {
+			while (Kernel32.Module32NextW(snapshot, entry)) {
+				String name = entry.szModule();
+				modules.putIfAbsent(name, new Module(this, name, entry.hModule.getPointer(), entry.modBaseSize.intValue()));
+			}
+		} finally {
+			Kernel32.CloseHandle(snapshot);
+		}
+	}
 
-    @Override
-    public MemoryBuffer read(Pointer address, int size) {
-        MemoryBuffer buffer = Cacheable.buffer(size);
-        if (Kernel32.ReadProcessMemory(pointer(), address, buffer, size, 0) == 0) {
-            throw new Win32Exception(Native.getLastError());
-        }
-        return buffer;
-    }
+	@Override
+	public MemoryBuffer read(long address, int size) {
+		MemoryBuffer buffer = Cacheable.buffer(size);
+		if (Kernel32.ReadProcessMemory(pointer(), Cacheable.pointer(address), buffer, size, 0) == 0) {
+			throw new Win32Exception(Native.getLastError());
+		}
+		return buffer;
+	}
 
-    @Override
-    public Process write(Pointer address, MemoryBuffer buffer) {
-        if (Kernel32.WriteProcessMemory(pointer(), address, buffer, buffer.size(), 0) == 0) {
-            throw new Win32Exception(Native.getLastError());
-        }
-        return this;
-    }
+	@Override
+	public Process write(Pointer address, MemoryBuffer buffer) {
+		if (Kernel32.WriteProcessMemory(pointer(), address, buffer, buffer.size(), 0) == 0) {
+			throw new Win32Exception(Native.getLastError());
+		}
+		return this;
+	}
 
-    @Override
-    public boolean canRead(Pointer address, int size) {
-        return Kernel32.ReadProcessMemory(pointer(), address, Cacheable.buffer(size), size, 0) != 0;
-    }
+	@Override
+	public boolean canRead(Pointer address, int size) {
+		return Kernel32.ReadProcessMemory(pointer(), address, Cacheable.buffer(size), size, 0) != 0;
+	}
 
-    @Override
-    public MemoryBuffer read(Pointer address, int size, MemoryBuffer buffer) {
-        if (Kernel32.ReadProcessMemory(pointer(), address, buffer, size, 0) == 0) {
-            throw new Win32Exception(Native.getLastError());
-        }
-        return buffer;
-    }
+	@Override
+	public void read(long address, int size, long target) {
+		if (Kernel32.ReadProcessMemory(pointer(), Cacheable.pointer(address), Cacheable.pointer(target), size, 0) == 0) {
+			throw new Win32Exception(Native.getLastError());
+		}
+	}
 
 }

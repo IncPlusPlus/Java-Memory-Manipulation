@@ -25,6 +25,7 @@ import java.util.Scanner;
  */
 public final class Utils {
 
+	@SuppressWarnings("resource")
 	public static int exec(String... command) {
 		try {
 			return Integer.parseInt(new Scanner(Runtime.getRuntime().exec(command).getInputStream()).next());

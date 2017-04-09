@@ -26,9 +26,9 @@ import com.sun.jna.Pointer;
  */
 public interface DataSource {
 
-	MemoryBuffer read(Pointer address, int size);
-	
-	MemoryBuffer read(Pointer address, int size, MemoryBuffer tobuf);
+	MemoryBuffer read(long address, int size);
+
+	void read(long address, int size, long target);
 
 	Process write(Pointer address, MemoryBuffer buffer);
 
@@ -71,17 +71,30 @@ public interface DataSource {
 		read(address, bytes.length).get(bytes);
 		return Strings.transform(bytes);
 	}
-	
+
 	default long readPointer(long address) {
 		return read(address, 8).getLong();
 	}
 
-	default MemoryBuffer read(long address, int size) {
-		return read(Cacheable.pointer(address), size);
+	default MemoryBuffer read(Pointer address, int size) {
+		return read(Pointer.nativeValue(address), size);
 	}
-	
-	default MemoryBuffer read(long address, int size, MemoryBuffer tobuf) {
-		return read(Cacheable.pointer(address), size, tobuf);
+
+	default MemoryBuffer read(long address, int size, MemoryBuffer target) {
+		read(address, size, Pointer.nativeValue(target));
+		return target;
+	}
+
+	default MemoryBuffer read(Pointer address, int size, MemoryBuffer target) {
+		return read(Pointer.nativeValue(address), size, target);
+	}
+
+	default MemoryBuffer read(long address, MemoryBuffer target) {
+		return read(address, target.size(), target);
+	}
+
+	default void read(long address, int size, Pointer target) {
+		read(address, size, Pointer.nativeValue(target));
 	}
 
 	default Process writeBoolean(long address, boolean value) {
