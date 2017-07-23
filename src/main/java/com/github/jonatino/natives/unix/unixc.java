@@ -16,6 +16,7 @@ public final class unixc {
 				NativeUtils.loadLibraryFromJar("/libnative_mem.so");
 			} else {
 				// Loading directly from java.library.path
+				// System.out.println("Loading from " + System.getProperty("java.library.path"));
 				System.loadLibrary("native_mem");
 			}
 		} catch (UnsatisfiedLinkError | IOException e) {
@@ -24,6 +25,8 @@ public final class unixc {
 			System.exit(1);
 		}
 	}
+
+	public static native long ptrace(/* enum __ptrace_request */ long request, /* pid_t */ int pid, long addr, long data);
 
 	public static native long mem_read(int pid, long localaddr, long remoteaddr, int size) throws LastErrorException;
 

@@ -17,6 +17,7 @@
 package com.github.jonatino.natives.unix;
 
 import com.sun.jna.*;
+import com.sun.jna.ptr.IntByReference;
 
 import java.util.List;
 
@@ -28,6 +29,12 @@ public final class unix {
 	static {
 		Native.register(NativeLibrary.getInstance("c"));
 	}
+
+	public static native long ptrace(/* enum __ptrace_request */ long request, /* pid_t */ int pid, long addr, long data);
+
+	public static native long waitpid(/* pid_t */ int pid, long status, int options);
+
+	public static native long waitpid(/* pid_t */ int pid, IntByReference status, int options);
 
 	public static native long process_vm_readv(int pid, iovec local, long liovcnt, iovec remote, long riovcnt, long flags) throws LastErrorException;
 
@@ -63,6 +70,34 @@ public final class unix {
 
 	public static String hex(long n) {
 		return String.format("0x%8s", Long.toHexString(n)).replace(' ', '0');
+	}
+
+	/* The termination signal. Only to be accessed if WIFSIGNALED(x) is true. */
+	public static int WTERMSIG(int status) {
+		return status & 0x7f;
+	}
+
+	/* The exit status. Only to be accessed if WIFEXITED(x) is true. */
+	public static int WEXITSTATUS(int status) {
+		return (status >> 8) & 0xff;
+	}
+
+	/* The stopping signal. Only to be accessed if WIFSTOPPED(x) is true. */
+	public static int WSTOPSIG(int status) {
+		return (status >> 8) & 0x7f;
+	}
+
+	/* For valid x, exactly one of WIFSIGNALED(x), WIFEXITED(x), WIFSTOPPED(x) is true. */
+	public static boolean WIFSIGNALED(int status) {
+		return WTERMSIG(status) != 0 && WTERMSIG(status) != 0x7f;
+	}
+
+	public static boolean WIFEXITED(int status) {
+		return WTERMSIG(status) == 0;
+	}
+
+	public static boolean WIFSTOPPED(int status) {
+		return WTERMSIG(status) == 0x7f;
 	}
 
 }
