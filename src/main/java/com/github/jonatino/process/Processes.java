@@ -49,7 +49,10 @@ public final class Processes {
 				Kernel32.CloseHandle(snapshot);
 			}
 		} else if (Platform.isMac() || Platform.isLinux()) {
-			return byId(Utils.exec("bash", "-c", "ps -A | grep -m1 \"" + name + "\" | awk '{print $1}'"));
+			int pid = Utils.exec("bash", "-c", "ps -A | grep -m1 \"" + name + "\" | awk '{print $1}'");
+			if (pid > 0)
+				return byId(pid);
+			return null;
 		} else {
 			throw new UnsupportedOperationException("Unknown operating system! (" + System.getProperty("os.name") + ")");
 		}

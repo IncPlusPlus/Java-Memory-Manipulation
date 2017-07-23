@@ -80,8 +80,14 @@ public interface DataSource {
 		return read(Pointer.nativeValue(address), size);
 	}
 
+	default Process write(long address, MemoryBuffer buffer) {
+		return write(Cacheable.pointer(address), buffer);
+	}
+
 	default MemoryBuffer read(long address, int size, MemoryBuffer target) {
 		read(address, size, Pointer.nativeValue(target));
+		target._lastreadaddress = address;
+		target._lastreadsrc = this;
 		return target;
 	}
 

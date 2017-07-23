@@ -16,6 +16,7 @@
 
 package com.github.jonatino.misc;
 
+import com.github.jonatino.process.DataSource;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 
@@ -25,6 +26,8 @@ import com.sun.jna.Pointer;
 public final class MemoryBuffer extends Pointer {
 
 	private int size;
+	public DataSource _lastreadsrc;
+	public long _lastreadaddress;
 
 	public MemoryBuffer(int size) {
 		super(Native.malloc(size));
@@ -63,6 +66,18 @@ public final class MemoryBuffer extends Pointer {
 
 	public MemoryBuffer putDouble(double value) {
 		setDouble(0, value);
+		return this;
+	}
+
+	public MemoryBuffer setBytes(long offset, byte[] data) {
+		for (int i = 0; i < data.length; ++i) {
+			setByte(offset + i, data[i]);
+		}
+		return this;
+	}
+
+	public MemoryBuffer setBytes(byte[] data) {
+		setBytes(0, data);
 		return this;
 	}
 
@@ -108,6 +123,14 @@ public final class MemoryBuffer extends Pointer {
 
 	public int size() {
 		return size;
+	}
+
+	public DataSource lastReadSource() {
+		return _lastreadsrc;
+	}
+
+	public long lastReadAddress() {
+		return _lastreadaddress;
 	}
 
 	public byte[] array() {

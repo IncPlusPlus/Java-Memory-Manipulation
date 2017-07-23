@@ -31,12 +31,16 @@ public final class Strings {
 		if (stringCache.containsKey(hash)) {
 			return stringCache.get(hash);
 		}
-		for (int i = 0; i < bytes.length; i++) {
-			if (bytes[i] == 0) {
-				bytes[i] = 32;
-			}
+		int i = 0;
+		for (i = 0; i < bytes.length; i++) {
+			if (bytes[i] == 0)
+				break;
 		}
-		String string = new String(bytes);
+		byte[] buf = new byte[i];
+		for (i = 0; i < buf.length; i++) {
+			buf[i] = bytes[i];
+		}
+		String string = new String(buf);
 		stringCache.put(hash, string);
 		return string;
 	}

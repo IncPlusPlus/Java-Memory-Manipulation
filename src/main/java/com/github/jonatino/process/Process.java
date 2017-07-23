@@ -25,6 +25,8 @@ public interface Process extends DataSource {
 
 	void initModules();
 
+	Module getModule(String moduleName);
+
 	Module findModule(String moduleName);
 
 }

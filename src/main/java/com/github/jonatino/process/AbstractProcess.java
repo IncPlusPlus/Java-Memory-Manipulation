@@ -19,6 +19,7 @@ package com.github.jonatino.process;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Created by Jonathan on 7/19/2016.
@@ -39,11 +40,31 @@ public abstract class AbstractProcess implements Process {
 	}
 
 	@Override
-	public Module findModule(String moduleName) {
+	public Module getModule(String moduleName) {
 		Module module = modules.isEmpty() ? null : modules.get(moduleName);
 		if (module == null) {
 			initModules();
 			module = modules.isEmpty() ? null : modules.get(moduleName);
+		}
+		return module;
+	}
+
+	@Override
+	public Module findModule(String moduleName) {
+		Module module = modules.isEmpty() ? null : modules.get(moduleName);
+		if (module == null) {
+			if (modules.isEmpty()) {
+				initModules();
+				if (modules.isEmpty())
+					return null;
+				module = modules.get(moduleName);
+				if (module != null)
+					return module;
+			}
+			for (Entry<String, Module> e : modules.entrySet()) {
+				if (e.getKey().contains(moduleName))
+					return e.getValue();
+			}
 		}
 		return module;
 	}

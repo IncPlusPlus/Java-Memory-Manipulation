@@ -31,6 +31,8 @@ public final class Utils {
 			return Integer.parseInt(new Scanner(Runtime.getRuntime().exec(command).getInputStream()).next());
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read output from " + Arrays.toString(command));
+		} catch (Exception e) {
+			return -1;
 		}
 	}
 
