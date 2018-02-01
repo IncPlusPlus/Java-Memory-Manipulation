@@ -99,5 +99,14 @@ public final class unix {
 	public static boolean WIFSTOPPED(int status) {
 		return WTERMSIG(status) == 0x7f;
 	}
+	
+	public static boolean WIFCONTINUED(int status) {
+		return status == 0xffff;
+	}
+	
+	/* Nonzero if STATUS indicates the child dumped core.  */
+	public static boolean WCOREDUMP(int status) {
+		return (status & 0x80) > 0;
+	}
 
 }

@@ -33,7 +33,7 @@ public final class Strings {
 		}
 		int i = 0;
 		for (i = 0; i < bytes.length; i++) {
-			if (bytes[i] == 0)
+			if (bytes[i] == 0) //bytes[i] = ' ';
 				break;
 		}
 		byte[] buf = new byte[i];

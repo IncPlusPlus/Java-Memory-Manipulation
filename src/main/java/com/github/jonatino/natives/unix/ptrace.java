@@ -35,11 +35,6 @@ public final class ptrace {
 	public static void cont(int pid) throws IllegalStateException {
 		if (ptracef(PTRACE_CONT, pid, 0, 0) == -1)
 			throw new IllegalStateException("ptrace(PTRACE_CONT) failed");
-		try {
-			Thread.sleep(5);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 
 	// Same as cont(int), but stops at the next system call
@@ -103,8 +98,8 @@ public final class ptrace {
 	 */
 	public static long peektext(int pid, long addr) throws IllegalStateException {
 		long data = ptracef(PTRACE_PEEKTEXT, pid, addr, 0);
-		if (data == -1)
-			throw new IllegalStateException("ptrace(PTRACE_PEEKTEXT) failed: " + addr);
+		// if (data == -1)
+		//	throw new IllegalStateException("ptrace(PTRACE_PEEKTEXT) failed: " + addr);
 		return data;
 	}
 
@@ -117,15 +112,18 @@ public final class ptrace {
 	}
 
 	public static MemoryBuffer read(int pid, long addr, int len) throws IllegalStateException {
-		int bytesRead = 0;
-		long read = 0;
 		MemoryBuffer buf = Cacheable.buffer(len);
-
+		for (int i = 0; i < len; i += Long.BYTES) {
+			buf.setLong(i, peektext(pid, addr + i));
+		}
+		
+		/*int bytesRead = 0;
+		long read = 0;
 		while (bytesRead < len) {
 			read = peektext(pid, addr + bytesRead);
 			buf.setByte(bytesRead, (byte) (read & 0xFF));
 			bytesRead++;
-		}
+		}*/
 
 		return buf;
 	}
@@ -145,7 +143,7 @@ public final class ptrace {
 	}
 
 	public static void write(int pid, long addr, byte[] buf) throws IllegalStateException {
-		for (int i = 0; i < buf.length - 1; i += Long.BYTES)
+		for (int i = 0; i < buf.length; i += Long.BYTES)
 			poketext(pid, addr + i, bytesToLong(buf, i));
 	}
 
@@ -170,7 +168,7 @@ public final class ptrace {
 	}
 
 	public static class user_regs_struct extends Structure {
-
+		
 		public long r15;
 		public long r14;
 		public long r13;
@@ -208,7 +206,7 @@ public final class ptrace {
 		public String toString() {
 			return "user_regs_struct [r15=" + r15 + ", r14=" + r14 + ", r13=" + r13 + ", r12=" + r12 + ", rbp=" + rbp + ", rbx=" + rbx + ", r11=" + r11 + ", r10=" + r10 + ", r9=" + r9 + ", r8=" + r8 + ", rax=" + rax + ", rcx=" + rcx + ", rdx=" + rdx + ", rsi=" + rsi + ", rdi=" + rdi + ", orig_rax=" + orig_rax + ", rip=" + rip + ", cs=" + cs + ", eflags=" + eflags + ", rsp=" + rsp + ", ss=" + ss + ", fs_base=" + fs_base + ", gs_base=" + gs_base + ", ds=" + ds + ", es=" + es + ", fs=" + fs + ", gs=" + gs + "]";
 		}
-
+		
 	}
 
 	// /usr/include/linux/ptrace.h

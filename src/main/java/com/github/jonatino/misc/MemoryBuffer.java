@@ -75,6 +75,21 @@ public final class MemoryBuffer extends Pointer {
 		}
 		return this;
 	}
+	
+	public MemoryBuffer setBytes(MemoryBuffer data) {
+		return setBytes(0, data, Math.min(this.size(), data.size()));
+	}
+	
+	public MemoryBuffer setBytes(long offset, MemoryBuffer data) {
+		return setBytes(0, data, Math.min(this.size(), offset + data.size()));
+	}
+	
+	public MemoryBuffer setBytes(long offset, Pointer data, long length) {
+		for (int i = 0; i < length; ++i) {
+			this.setByte(offset + i, data.getByte(i));
+		}
+		return this;
+	}
 
 	public MemoryBuffer setBytes(byte[] data) {
 		setBytes(0, data);
@@ -137,6 +152,10 @@ public final class MemoryBuffer extends Pointer {
 		byte[] data = Cacheable.array(size);
 		get(data);
 		return data;
+	}
+
+	public void free() {
+		Native.free(Pointer.nativeValue(this));
 	}
 
 }

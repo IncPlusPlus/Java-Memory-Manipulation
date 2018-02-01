@@ -2,8 +2,6 @@ package com.github.jonatino.natives.unix;
 
 import com.sun.jna.*;
 
-import java.util.List;
-
 /**
  * Created by jonathan on 06/01/16.
  */
