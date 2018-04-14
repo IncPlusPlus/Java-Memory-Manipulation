@@ -24,7 +24,7 @@ import com.sun.jna.Pointer;
  * Created by Jonathan on 1/10/2016.
  */
 public final class MemoryBuffer extends Pointer {
-
+	
 	private int size;
 	public DataSource _lastreadsrc;
 	public long _lastreadaddress;
@@ -32,6 +32,22 @@ public final class MemoryBuffer extends Pointer {
 	public MemoryBuffer(int size) {
 		super(Native.malloc(size));
 		this.size = size;
+	}
+
+	public MemoryBuffer(byte[] arr) {
+		this(arr.length);
+		this.setBytes(arr);
+	}
+	
+	public MemoryBuffer(Pointer ptr) {
+		super(Pointer.nativeValue(ptr));
+		this._lastreadaddress = Pointer.nativeValue(ptr); 
+	}
+	
+	public MemoryBuffer(long addr, int size) {
+		super(addr);
+		this.size = size;
+		this._lastreadaddress = addr;
 	}
 
 	public MemoryBuffer putBoolean(boolean value) {
@@ -119,6 +135,7 @@ public final class MemoryBuffer extends Pointer {
 	public int getShort() {
 		return getShort(0);
 	}
+
 
 	public int getInt() {
 		return getInt(0);

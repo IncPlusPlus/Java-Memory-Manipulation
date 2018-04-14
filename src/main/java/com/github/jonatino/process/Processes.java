@@ -20,6 +20,7 @@ import com.github.jonatino.misc.Utils;
 import com.github.jonatino.natives.mac.mac;
 import com.github.jonatino.natives.unix.libc;
 import com.github.jonatino.natives.win32.Kernel32;
+import com.github.jonatino.process.impl.UnsafeProcess;
 import com.github.jonatino.process.impl.mac.MacProcess;
 import com.github.jonatino.process.impl.unix.UnixProcessC;
 import com.github.jonatino.process.impl.win32.Win32Process;
@@ -60,6 +61,9 @@ public final class Processes {
 	}
 
 	public static Process byId(int id) {
+		if(libc.getpid() == id) {
+			return new UnsafeProcess(id);
+		}
 		if ((Platform.isMac() || Platform.isLinux()) && !isSudo()) {
 			throw new RuntimeException("You need to run as root/sudo in order for functionality.");
 		}
