@@ -62,7 +62,7 @@ public abstract class AbstractProcess implements Process {
 					return module;
 			}
 			for (Entry<String, Module> e : modules.entrySet()) {
-				if (e.getKey().contains(moduleName))
+				if (e.getKey().startsWith(moduleName))
 					return e.getValue();
 			}
 		}

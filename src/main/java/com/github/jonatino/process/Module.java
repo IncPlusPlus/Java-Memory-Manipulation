@@ -20,7 +20,7 @@ import com.github.jonatino.misc.Cacheable;
 import com.github.jonatino.misc.MemoryBuffer;
 import com.sun.jna.Pointer;
 
-public final class Module implements DataSource {
+public class Module implements DataSource {
 
 	private final Process process;
 	private final String name;
@@ -70,6 +70,10 @@ public final class Module implements DataSource {
 
 	public long end() {
 		return address + size;
+	}
+	
+	public String permissions() {
+		return this.permissions;
 	}
 
 	public boolean isReadable() {
@@ -127,12 +131,8 @@ public final class Module implements DataSource {
 	}
 
 	public long GetAbsoluteAddress(long address, int offset, int size) {
-		long code = (int) readPointer(address + offset);
-		System.out.println("reading " + hex(address + offset));
-		System.out.println("read: " + hex(code));
-		if (code > 0)
-			return code + address + size;
-		return 0;
+		long code = readInt(address + offset);
+		return code + address + size;
 	}
 
 	public long GetCallAddress(long address) {
