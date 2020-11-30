@@ -13,8 +13,10 @@ public final class dlfcn {
 	}
 
 	public static native long dlopen(String filename, int flags);
+	
+	public static native int dlclose(long handle);
 
-	public static native long dlsym(long handle, String symbol);
+	public static native long dlsym(long handle, String symbol);	
 
 	public static int RTLD_LAZY = 0x1;
 	public static int RTLD_NOW = 0x2;

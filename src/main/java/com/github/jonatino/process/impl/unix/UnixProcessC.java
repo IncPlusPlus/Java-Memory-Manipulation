@@ -76,16 +76,16 @@ public final class UnixProcessC extends AbstractProcess {
 					continue;
 				if (modulename == "" && prevmodulename != "") {
 					long mstart = modules.get(prevmodulename).start();
-					modules.put(prevmodulename, new Module(this, prevmodulename, Pointer.createConstant(mstart), end - mstart, split[1]));
-					System.out.println("> Extended " + prevmodulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
+					// modules.put(prevmodulename, new Module(this, prevmodulename, Pointer.createConstant(mstart), end - mstart, split[1]));
+					System.out.println("> Wanna Extended " + prevmodulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
 				} else {
 					if (modules.containsKey(modulename)) {
 						long mstart = modules.get(modulename).start();
 						modules.put(modulename, new Module(this, modulename, Pointer.createConstant(mstart), end - mstart, split[1]));
-						System.out.println("> Updated " + modulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
+						//System.out.println("> Updated " + modulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
 					} else {
 						modules.put(modulename, new Module(this, modulename, Pointer.createConstant(start), end - start, split[1]));
-						System.out.println("Found " + modulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
+						//System.out.println("Found " + modulename + " @ " + Module.hex(start) + " - " + Module.hex(end) + " / " + split[1]);
 					}
 				}
 				if (modulename != "")

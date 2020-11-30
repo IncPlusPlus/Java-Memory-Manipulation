@@ -123,7 +123,7 @@ public final class UnsafeProcess extends AbstractProcess {
 	@Override
 	public String readString(long address, int length) {
 		byte[] bytes = Cacheable.array(length);
-		read(address, bytes.length).get(bytes);
+		Cacheable.pointer(address).read(0, bytes, 0, length);
 		return Strings.transform(bytes);
 	}
 

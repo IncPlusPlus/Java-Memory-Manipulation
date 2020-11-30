@@ -2,6 +2,7 @@ package com.github.jonatino.natives.unix;
 
 import com.github.jonatino.misc.Cacheable;
 import com.github.jonatino.misc.MemoryBuffer;
+import com.github.jonatino.process.Module;
 import com.sun.jna.*;
 
 import java.util.List;
@@ -84,13 +85,13 @@ public final class ptrace {
 		 */
 		long data = ptracef(PTRACE_PEEKUSER, pid, offset, 0);
 		if (data == -1)
-			throw new IllegalStateException("ptrace(PTRACE_PEEKUSER) failed: " + offset);
+			throw new IllegalStateException("ptrace(PTRACE_PEEKUSER) failed: " + Module.hex(offset));
 		return data;
 	}
 
 	public static void pokeuser(int pid, long offset, long data) throws IllegalStateException {
 		if (ptracef(PTRACE_POKEUSER, pid, offset, data) == -1)
-			throw new IllegalStateException("ptrace(PTRACE_POKEUSER) failed");
+			throw new IllegalStateException("ptrace(PTRACE_POKEUSER) failed: " + Module.hex(data) + " > " + pid + " @ " + Module.hex(offset));
 	}
 
 	/*
@@ -108,7 +109,7 @@ public final class ptrace {
 	 */
 	public static void poketext(int pid, long addr, long data) throws IllegalStateException {
 		if (ptracef(PTRACE_POKETEXT, pid, addr, data) == -1)
-			throw new IllegalStateException("ptrace(PTRACE_POKETEXT) failed");
+			throw new IllegalStateException("ptrace(PTRACE_POKETEXT) failed: " + Module.hex(data) + " > " + pid + " @ " + Module.hex(addr));
 	}
 
 	public static MemoryBuffer read(int pid, long addr, int len) throws IllegalStateException {
@@ -164,7 +165,7 @@ public final class ptrace {
 
 	public static void setoptions(int pid, long flags) {
 		if (ptracef(PTRACE_SETOPTIONS, pid, 0, flags) == -1)
-			throw new IllegalStateException("ptrace(PTRACE_SETOPTIONS) failed");
+			throw new IllegalStateException("ptrace(PTRACE_SETOPTIONS) failed: " + Module.hex(flags));
 	}
 
 	public static class user_regs_struct extends Structure {
